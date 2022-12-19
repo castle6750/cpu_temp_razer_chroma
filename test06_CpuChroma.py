@@ -3,6 +3,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+# NOTE: this only works on python 3.8
 class textcolors:
     if not os.name == 'nt':
         blue = '\033[94m'
@@ -27,7 +28,7 @@ p = pyaudio.PyAudio()
 
 #Set default to first in list or ask Windows
 try:
-    default_device_index = 7 #p.get_default_input_device_info()
+    default_device_index = 9 #p.get_default_input_device_info()
 except IOError:
     default_device_index = -1
 
@@ -35,7 +36,8 @@ except IOError:
 print (textcolors.blue + "Available devices:\n" + textcolors.end)
 for i in range(0, p.get_device_count()):
     info = p.get_device_info_by_index(i)
-    print (textcolors.green + str(info["index"]) + textcolors.end + ": \t %s \n \t %s \n" % (info["name"], p.get_host_api_info_by_index(info["hostApi"])["name"]))
+    if p.get_host_api_info_by_index(info["hostApi"])["name"] == "Windows WASAPI":
+        print (textcolors.green + str(info["index"]) + textcolors.end + ": \t %s \n \t %s \n" % (info["name"], p.get_host_api_info_by_index(info["hostApi"])["name"]))
 
     if default_device_index == -1:
         default_device_index = info["index"]
