@@ -1,0 +1,1 @@
+c:\Users\castl\AppData\Local\Programs\Python\Python310\python.exe  c:\Users\castl\OneDrive\Documents\Python\cpu_temp_razer_chroma\test02_CpuChroma.py
