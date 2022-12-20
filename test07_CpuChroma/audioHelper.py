@@ -7,14 +7,15 @@ import pyaudio
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import threading, time, struct
+import threading, time, struct, queue
 
 class Helper():
     def __init__(self) -> None:
         self.default_device_index = 9
-        self.defaultframes = 1024 #int(device_info['defaultSampleRate'])
+        self.defaultframes = 1024*2 #int(device_info['defaultSampleRate'])
         self.data = np.random.rand(self.defaultframes)
-        self.fig, self.ax = plt.subplots()
+        self.fig, self.ax1 = plt.subplots(1, figsize=(15, 7))
+        #self.fig, self.ax = plt.subplots()
         #self.ax.set_ylim(0,6000)
 
     def startDevice(self):
@@ -52,17 +53,32 @@ class Helper():
                         input_device_index = device_info["index"],
                         as_loopback = useloopback)
 
-        samples = int(self.defaultframes * 2)
-        x_fft = np.linspace(0, self.sampleRate, samples)
-        self.lineFFT, = self.ax.semilogx(x_fft, np.random.rand(samples), 'b')
-
+        samples = int(self.defaultframes )
+        #x = np.arange(0, 2 * samples, 2)       # samples (waveform)
+        xf = np.linspace(0, self.sampleRate, samples)     # frequencies (spectrum)       
+        #x_fft = np.linspace(0, self.sampleRate, samples)
+        #self.lineFFT, = self.ax.semilogx(x_fft, np.random.rand(samples), 'b')
+        #self.line, = self.ax1.plot(x, np.random.rand(samples), '-', lw=2)
+        self.line_fft, = self.ax1.semilogx(xf, np.random.rand(samples), '-', lw=2)
         #x = np.arange(0, samples, 1)
         #lineData, = ax.plot(x, np.random.rand(samples), 'r')
         #self.lineFFT, = self.ax.plot(x, np.random.rand(samples), 'r')
         
-        #self.ax.set_xlim(0, samples)
-        self.ax.set_xlim(20,self.sampleRate/2)
-        self.ax.set_ylim(0,1)
+        #self.ax.set_xlim(0, samples *2)
+        #self.ax.set_xlim(20,self.sampleRate/2)
+        #self.ax.set_ylim(0,1)
+        # format waveform axes
+        #self.ax1.set_title('AUDIO WAVEFORM')
+        #self.ax1.set_xlabel('samples')
+        #self.ax1.set_ylabel('volume')
+        #self.ax1.set_ylim(0, 255)
+        #self.ax1.set_xlim(0, 2 * samples)
+        #plt.setp(self.ax1, xticks=[0, samples, 2 * samples], yticks=[0, 128, 255])
+
+        # format spectrum axes
+        self.ax1.set_xlim(20, self.sampleRate / 2)
+
+        print('stream started')
         self.fig.show()
 
         cThread = threading.Thread(target = self.updateData)
@@ -73,20 +89,24 @@ class Helper():
     def updateData(self):
         
         isRunning = True
-        
+        rollingMax = []#queue.Queue()
+        maxFreq = 0
         while isRunning:
             #data = np.fromstring(self.stream.read(self.defaultframes),dtype=np.int16)
             data = self.stream.read(self.defaultframes)
-            dataInt = struct.unpack(str(self.defaultframes*2) + 'h', data)
-            fft = np.fft.fft(dataInt)
-            freq = np.abs(fft)*2/(11000*self.defaultframes)
+            #dataInt = struct.unpack(str(self.defaultframes*2) + 'h', data)
+            dataInt = struct.unpack(str(2 * self.defaultframes) + 'h', data)
+            #fft = np.fft.fft(dataInt)
+            #freq = np.abs(fft[0:self.defaultframes]) *2 / (256 * self.defaultframes)
+            #fft = np.abs(np.fft.fft(dataInt))
+            #freq = fft*2/(11000*self.defaultframes)
 
-            #X = np.fft.fft(data)
-            #N = len(X)
-            #n = np.arange(N)
-            #T = N/self.defaultframes
-            #freq = n/T 
-
+            #data_np = np.array(dataInt, dtype='b')[::2] + 128
+            #self.line.set_ydata(data_np)
+    
+            # compute FFT and update line
+            yf = np.fft.fft(dataInt)
+            freq = np.abs(yf[0:self.defaultframes]) *2 / (self.defaultframes * 4* self.defaultframes)
             #data = data * np.hanning(len(data)) # smooth the FFT by windowing data
             #fft = abs(np.fft.fft(data))#.real)
             #fft = fft[:int(len(fft)/2)] # keep only first half
@@ -100,10 +120,22 @@ class Helper():
 
             #freqPeak = freq[np.where(fft==np.max(fft))[0][0]]+1
             #lineData.set_ydata(data)
+            
+            if len(rollingMax) > 100:
+                rollingMax.pop(0)
+            rollingMax.append(max(freq))
+            #maxFreq = sum(rollingMax)/len(rollingMax)
+            if max(freq) > maxFreq:
+                maxFreq = max(freq)
+                #print(maxFreq)
+            #self.ax1.set_ylim(0,sum(rollingMax)/len(rollingMax))
+            self.ax1.set_ylim(0,maxFreq)
+            #freq = freq / maxFreq
             self.data = freq
+            self.line_fft.set_ydata(freq)
             #self.ax.set_ylim(min(freq),max(freq))
             #self.lineFFT.set_xdata(freq)
-            self.lineFFT.set_ydata(freq)
+            #self.lineFFT.set_ydata(freq)
 
 
         self.stream.stop_stream()
