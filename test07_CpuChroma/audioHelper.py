@@ -129,10 +129,10 @@ class Helper():
                 maxFreq = max(freq)
                 #print(maxFreq)
             #self.ax1.set_ylim(0,sum(rollingMax)/len(rollingMax))
-            self.ax1.set_ylim(0,maxFreq)
+            #self.ax1.set_ylim(0,maxFreq)
             #freq = freq / maxFreq
             self.data = freq
-            self.line_fft.set_ydata(freq)
+            #self.line_fft.set_ydata(freq)
             #self.ax.set_ylim(min(freq),max(freq))
             #self.lineFFT.set_xdata(freq)
             #self.lineFFT.set_ydata(freq)

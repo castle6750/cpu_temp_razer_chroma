@@ -30,9 +30,10 @@ def main(chroma: chromaHelper.Helper, audio: audioHelper.Helper):
         chroma.i=(chroma.i+1)% len(chroma.KeyboardGrid)
         #time.sleep(0.2)
 
-        
+        audio.line_fft.set_ydata(audio.data)
         audio.fig.canvas.draw()
         audio.fig.canvas.flush_events()
+        
 
 if  __name__ == "__main__":
     if chromaHelper.is_admin():
