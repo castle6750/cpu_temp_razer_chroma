@@ -22,12 +22,12 @@ def rerun_as_admin():
 
 def main():
     Info = ChromaAppInfo()
-    Info.DeveloperName = 'Rick Sanchez'
-    Info.DeveloperContact = 'Wubba-lubba@dub-dub.com'
+    Info.DeveloperName = 'Stuart Castle'
+    Info.DeveloperContact = 'castle6750@gmail.com'
     Info.Category = 'application'
-    Info.SupportedDevices = ['keyboard', 'mouse', 'mousepad', 'keypad']
-    Info.Description = 'Oh Rick, I don\'t know if that\'s a good idea.'
-    Info.Title = 'Mr Meeseeks Box'
+    Info.SupportedDevices = ['keyboard', 'mouse', 'mousepad', 'headset', 'keypad', 'chromalink']
+    Info.Description = 'Python Script for displaying cpu temp'
+    Info.Title = 'CPU Chroma'
 
     App = ChromaApp(Info)
 
